@@ -1,0 +1,176 @@
+import React, { useState, useEffect } from "react";
+
+/**
+ * NoteEditor - Editor for creating/editing and deleting a note
+ * @param {Object} props
+ * @param {Object} props.note - {id, title, content, updatedAt}
+ * @param {boolean} props.isNew
+ * @param {function} props.onSave
+ * @param {function} props.onDelete
+ * @param {function} props.onChange
+ */
+export default function NoteEditor({
+  note = { title: '', content: '' },
+  isNew = false,
+  onSave,
+  onDelete,
+  onChange
+}) {
+  const [localNote, setLocalNote] = useState({ ...note });
+
+  useEffect(() => {
+    setLocalNote({ ...note });
+  }, [note]);
+
+  function handleInput(e) {
+    const { name, value } = e.target;
+    const updated = { ...localNote, [name]: value };
+    setLocalNote(updated);
+    onChange && onChange(updated);
+  }
+
+  function handleSave(e) {
+    e.preventDefault();
+    onSave && onSave(localNote);
+  }
+
+  function handleDelete() {
+    if (localNote.id && window.confirm("Delete this note?")) {
+      onDelete && onDelete(localNote.id);
+    }
+  }
+
+  return (
+    <form className="editor-container" onSubmit={handleSave}>
+      <input
+        className="title-input"
+        name="title"
+        value={localNote.title || ''}
+        maxLength="96"
+        placeholder="Title"
+        onChange={handleInput}
+        autoFocus
+        required
+        spellCheck={true}
+        autoComplete="off"
+      />
+      <textarea
+        className="content-input"
+        name="content"
+        value={localNote.content || ''}
+        placeholder="Start typing your note ..."
+        rows={12}
+        onChange={handleInput}
+        required
+      ></textarea>
+      <div className="editor-actions">
+        <button className="save-btn" type="submit" title="Save Note">
+          {isNew ? "Create" : "Save"}
+        </button>
+        {!isNew && (
+          <button className="delete-btn" type="button" title="Delete Note" onClick={handleDelete}>
+            Delete
+          </button>
+        )}
+      </div>
+      {localNote.updatedAt && (
+        <div className="note-updated-at">
+          Last updated: {new Date(localNote.updatedAt).toLocaleString()}
+        </div>
+      )}
+      <style>{`
+.editor-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 38px 34px 20px 34px;
+  background: var(--bg-color);
+  border-radius: 13px;
+  box-shadow: 0 4px 24px var(--shadow-color, rgba(0,0,0,0.07));
+  position: relative;
+}
+.title-input {
+  background: #f6f7fb;
+  border: none;
+  border-radius: 7px;
+  padding: 1.15em 1em;
+  font-size: 1.32em;
+  font-weight: 500;
+  margin-bottom: 1em;
+  outline: 1.5px solid var(--border-color, #c4c6c9);
+  color: var(--text-color);
+  transition: outline .14s;
+}
+.title-input:focus {
+  outline: 2px solid var(--primary, #1976d2);
+}
+.content-input {
+  flex: 1 1 auto;
+  min-height: 150px;
+  border: none;
+  font-size: 1.09em;
+  padding: 1.1em 1em;
+  border-radius: 7px;
+  background: #fafbfd;
+  margin-bottom: 1em;
+  resize: vertical;
+  color: var(--text-color);
+  outline: 1.5px solid var(--border-color, #c4c6c9);
+  transition: outline .14s;
+}
+.content-input:focus {
+  outline: 2px solid var(--primary, #1976d2);
+}
+.editor-actions {
+  display: flex;
+  gap: 9px;
+  margin-top: 2px;
+}
+.save-btn {
+  background: var(--primary, #1976d2);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.60em 1.9em;
+  font-size: 1.06em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.14s;
+  box-shadow: 0 1px 8px 0 var(--shadow-color, rgba(0,0,0,0.07));
+}
+.save-btn:hover, .save-btn:focus {
+  background: #1564c1;
+}
+.delete-btn {
+  background: var(--secondary, #424242);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.60em 1.1em;
+  font-size: 1.01em;
+  font-weight: 500;
+  cursor: pointer;
+  margin-left: 8px;
+  transition: background 0.13s;
+}
+.delete-btn:hover, .delete-btn:focus {
+  background: #222;
+}
+.note-updated-at {
+  color: var(--text-secondary);
+  font-size: 0.92em;
+  margin-top: 7px;
+  text-align: right;
+}
+@media (max-width: 900px) {
+  .editor-container {padding: 16px;}
+}
+@media (max-width: 720px) {
+  .editor-container {padding: 8px; min-width: 0;}
+}
+      `}</style>
+    </form>
+  );
+}
